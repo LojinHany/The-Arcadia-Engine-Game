@@ -497,27 +497,158 @@ long long InventorySystem::countStringPossibilities(string s) {
 // PART C: WORLD NAVIGATOR (Graphs)
 // =========================================================
 
-bool WorldNavigator::pathExists(int n, vector<vector<int> > &edges, int source, int dest) {
+bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, int dest)
+{
     // TODO: Implement path existence check using BFS or DFS
     // edges are bidirectional
+    // BFS
+    if (source == dest)
+    {
+        return true;
+    }
+    queue<int> vertex;
+    bool visited[n];
+    for (int i = 0; i < n; i++)
+    {
+        visited[i] = false;
+    }
+    vertex.push(source);
+    visited[source] = true;
+    while (!vertex.empty())
+    {
+        int curr = vertex.front();
+        vertex.pop();
+        for (int i = 0; i < edges.size(); i++)
+        {
+            int u = edges[i][0];
+            int v = edges[i][1];
+
+            if (u == curr && !visited[v])
+            {
+                if (v == dest)
+                    return true;
+                visited[v] = true;
+                vertex.push(v);
+            }
+
+            if (v == curr && !visited[u])
+            {
+                if (u == dest)
+                    return true;
+                visited[u] = true;
+                vertex.push(u);
+            }
+        }
+    }
     return false;
 }
 
-long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate,
-                                       vector<vector<int> > &roadData) {
-    // TODO: Implement Minimum Spanning Tree (Kruskal's or Prim's)
-    // roadData[i] = {u, v, goldCost, silverCost}
-    // Total cost = goldCost * goldRate + silverCost * silverRate
-    // Return -1 if graph cannot be fully connected
-    return -1;
+long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate, vector<vector<int>> &roadData)
+{   vector<int> vertex;
+    bool visited[n];
+    long long Total_cost = 0;
+
+    for (int i = 0; i < n; i++)
+        visited[i] = false;
+
+    visited[0] = true;
+    vertex.push_back(0);
+
+    while (vertex.size() < n)
+    {
+        bool found = false;
+
+        for (int i = 0; i < m; i++)
+        {
+            int u = roadData[i][0];
+            int v = roadData[i][1];
+            long long cost = roadData[i][2] * goldRate + roadData[i][3] * silverRate;
+
+            if (visited[u] && !visited[v])
+            {
+                visited[v] = true;
+                vertex.push_back(v);
+                Total_cost += cost;
+                found = true;
+                break;
+            }
+
+            if (visited[v] && !visited[u])
+            {
+                visited[u] = true;
+                vertex.push_back(u);
+                Total_cost += cost;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return -1;
+    }
+
+    return Total_cost;
 }
 
-string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int> > &roads) {
+string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int>> &roads){
+
     // TODO: Implement All-Pairs Shortest Path (Floyd-Warshall)
     // Sum all shortest distances between unique pairs (i < j)
     // Return the sum as a binary string
     // Hint: Handle large numbers carefully
-    return "0";
+    long long inf = INT_MAX;
+    vector<vector<long long>> dist(n, vector<long long>(n));
+    for (int i = 0; i < n; i++)
+    {
+
+        for (int j = 0; j < n; j++)
+        {
+            dist[i][j] = inf;
+            if (i == j)
+            {
+                dist[i][j] = 0;
+            }
+        }
+    }
+
+    for (int i = 0; i < roads.size(); i++)
+    {
+        int u = roads[i][0];
+        int v = roads[i][1];
+        long long cost = roads[i][2];
+        dist[u][v] = cost;
+    }
+    for (int k = 0; k < n; k++)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                if (dist[i][k] != inf && dist[k][j] != inf)
+                {
+                    dist[i][j] = min(dist[i][j],dist[i][k] + dist[k][j]);
+                }
+            }
+        }
+    }
+    long long sum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = i + 1; j < n; j++)
+        {
+            sum += dist[i][j];
+        }
+    }
+    if (sum == 0)
+        return "0";
+
+    string binary = "";
+    while (sum > 0)
+    {
+        binary = char('0' + (sum % 2)) + binary;
+        sum /= 2;
+    }
+    return binary;
 }
 
 // =========================================================
