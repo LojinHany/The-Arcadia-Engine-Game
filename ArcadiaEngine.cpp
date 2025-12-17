@@ -50,6 +50,18 @@ class ConcreteLeaderboard : public Leaderboard {
 private:
     // TODO: Define your skip list node structure and necessary variables
     // Hint: You'll need nodes with multiple forward pointers
+    struct SLNode {
+        int playerID;
+        int score;
+        vector<SLNode*> forward;
+
+        SLNode(int id, int sc, int level)
+            : playerID(id), score(sc), forward(level, nullptr) {}
+    };
+
+    static const int maxNumberOfLevel  = 16;
+    SLNode* head;
+    int currentLevel;
 
 public:
     ConcreteLeaderboard() {
@@ -358,27 +370,67 @@ public:
 // =========================================================
 // PART B: INVENTORY SYSTEM (Dynamic Programming)
 // =========================================================
+int InventorySystem::optimizeLootSplit(int n, vector<int>& coins) {
+    int total=0;
+    for (int i=0; i<n; i++){
+        total+=coins[i];
+    }
+    int goal = total/2;
 
-int InventorySystem::optimizeLootSplit(int n, vector<int> &coins) {
-    // TODO: Implement partition problem using DP
-    // Goal: Minimize |sum(subset1) - sum(subset2)|
-    // Hint: Use subset sum DP to find closest sum to total/2
-    return 0;
+    vector<bool> dp(goal+1,false);
+    dp[0]=true;
+
+    for (int i=0; i<n; i++) {
+        int coin = coins[i];
+        for (int j = goal; j >= coin; j--) {
+            dp[j] = dp[j] || dp[j - coin];
+        }
+    }
+
+    int best = 0;
+    for (int j=goal; j>=0; j--) {
+        if (dp[j]) {
+            best=j;
+            break;
+        }
+    }
+    return (total - best)-best;
 }
 
-int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int> > &items) {
-    // TODO: Implement 0/1 Knapsack using DP
-    // items = {weight, value} pairs
-    // Return maximum value achievable within capacity
-    return 0;
+int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int>>& items) {
+    int n = items.size();
+    vector<vector<int>>V(n+1, vector<int>(capacity+1, 0));
+
+    for (int i=1; i<=n; ++i) {
+        int w=items[i-1].first;
+        int v=items[i-1].second;
+        for (int j=0; j<=capacity; ++j) {
+            if (w <= j) {
+                V[i][j] = max(V[i-1][j], v+V[i-1][j-w]);
+            } else {
+                V[i][j]=V[i-1][j];
+            }
+        }
+    }
+    return V[n][capacity];
 }
 
 long long InventorySystem::countStringPossibilities(string s) {
-    // TODO: Implement string decoding DP
-    // Rules: "uu" can be decoded as "w" or "uu"
-    //        "nn" can be decoded as "m" or "nn"
-    // Count total possible decodings
-    return 0;
+    const long long MOD =1e9+7;
+    int n=s.size();
+    vector<long long> dp(n+1,0);
+    dp[0]=1;
+
+    for (int i = 1; i <= n; i++) {
+        dp[i] = dp[i-1];
+        if (i >1) {
+            string pair = s.substr(i - 2, 2);
+            if (pair =="uu" || pair =="nn") {
+                dp[i]=(dp[i] + dp[i - 2])%MOD;
+            }
+        }
+    }
+    return dp[n];
 }
 
 // =========================================================
@@ -451,3 +503,4 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
+
