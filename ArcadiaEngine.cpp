@@ -25,20 +25,80 @@ using namespace std;
 class ConcretePlayerTable : public PlayerTable {
 private:
     // TODO: Define your data structures here
+    static const int TABLE_SIZE = 101;   
+    struct PlayerData
+    {
+        /* data */
+        int PlayerID;
+        string name;
+        bool occupied;
+    };
+    
+    
     // Hint: You'll need a hash table with double hashing collision resolution
+    vector<PlayerData> table;
 
 public:
-    ConcretePlayerTable() {
+    ConcretePlayerTable(): table(TABLE_SIZE){
         // TODO: Initialize your hash table
+        for(int i = 0; i<TABLE_SIZE; i++){
+            table[i].PlayerID=-1;
+            table[i].name="";
+            table[i].occupied= false;
+
+        }
+        
+    }
+
+    int h1(int k) {
+    return k % TABLE_SIZE;
+    }
+
+    int h2(int k) {
+        return 1 + (k % (TABLE_SIZE - 1));   // must be non-zero
+    }
+
+    int h(int k, int i) {
+        return (h1(k) + i * h2(k)) % TABLE_SIZE;
+    }
+
+    int hashInsert(int k, string name){
+        int i=0;
+
+        while(i<TABLE_SIZE){
+            int j = h(k,i);
+            
+            if(!table[j].occupied){
+                table[j].PlayerID = k;
+                table[j].name = name;
+                table[j].occupied=true;
+                return j;
+            }
+            i = i + 1;
+        }
+        cout<<endl<<"Table is full";
     }
 
     void insert(int playerID, string name) override {
         // TODO: Implement double hashing insert
-        // Remember to handle collisions using h1(key) + i * h2(key)
+        hashInsert(playerID, name);
+
+        // Remember to handle collisions using h1(PlayerID) + i * h2(PlayerID)
     }
 
     string search(int playerID) override {
         // TODO: Implement double hashing search
+        int i = 0;
+        while(i<TABLE_SIZE){
+            int j=h(playerID,i);
+            if(table[j].PlayerID==playerID){
+                return table[j].name;
+            }
+            if(!table[j].occupied){
+                return "";
+            }
+            i = i + 1;
+        }
         // Return "" if player not found
         return "";
     }
@@ -503,4 +563,5 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
+
 
