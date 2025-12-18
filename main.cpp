@@ -1,4 +1,5 @@
 /**
+ *Dr's Testcase
  * main_test_student.cpp
  * Basic "Happy Path" Test Suite for ArcadiaEngine
  * Use this to verify your basic logic against the assignment examples.
@@ -18,22 +19,24 @@ using namespace std;
 // ==========================================
 // These link to the functions at the bottom of your .cpp file
 extern "C" {
-    PlayerTable* createPlayerTable();
-    Leaderboard* createLeaderboard();
-    AuctionTree* createAuctionTree();
+PlayerTable *createPlayerTable();
+
+Leaderboard *createLeaderboard();
+
+AuctionTree *createAuctionTree();
 }
 
 // ==========================================
 // TEST UTILITIES
 // ==========================================
 class StudentTestRunner {
-	int count = 0;
+    int count = 0;
     int passed = 0;
     int failed = 0;
 
 public:
     void runTest(string testName, bool condition) {
-		count++;
+        count++;
         cout << "TEST: " << left << setw(50) << testName;
         if (condition) {
             cout << "[ PASS ]";
@@ -49,7 +52,7 @@ public:
         cout << "\n==========================================" << endl;
         cout << "SUMMARY: Passed: " << passed << " | Failed: " << failed << endl;
         cout << "==========================================" << endl;
-		cout << "TOTAL TESTS: " << count << endl;
+        cout << "TOTAL TESTS: " << count << endl;
         if (failed == 0) {
             cout << "Great job! All basic scenarios passed." << endl;
             cout << "Now make sure to handle edge cases (empty inputs, collisions, etc.)!" << endl;
@@ -70,7 +73,7 @@ void test_PartA_DataStructures() {
 
     // 1. PlayerTable (Double Hashing)
     // Requirement: Basic Insert and Search
-    PlayerTable* table = createPlayerTable();
+    PlayerTable *table = createPlayerTable();
     runner.runTest("PlayerTable: Insert 'Alice' and Search", [&]() {
         table->insert(101, "Alice");
         return table->search(101) == "Alice";
@@ -78,7 +81,7 @@ void test_PartA_DataStructures() {
     delete table;
 
     // 2. Leaderboard (Skip List)
-    Leaderboard* board = createLeaderboard();
+    Leaderboard *board = createLeaderboard();
 
     // Test A: Basic High Score
     runner.runTest("Leaderboard: Add Scores & Get Top 1", [&]() {
@@ -104,7 +107,7 @@ void test_PartA_DataStructures() {
 
     // 3. AuctionTree (Red-Black Tree)
     // Requirement: Insert items without crashing
-    AuctionTree* tree = createAuctionTree();
+    AuctionTree *tree = createAuctionTree();
     runner.runTest("AuctionTree: Insert Items", [&]() {
         tree->insertItem(1, 100);
         tree->insertItem(2, 50);
@@ -130,7 +133,7 @@ void test_PartB_Inventory() {
     // 2. Inventory Packer (Knapsack)
     // PDF Example: Cap=10, Items={{1,10}, {2,20}, {3,30}}. All fit. Value=60.
     runner.runTest("Knapsack: Cap 10, All Fit -> Value 60", [&]() {
-        vector<pair<int, int>> items = {{1, 10}, {2, 20}, {3, 30}};
+        vector<pair<int, int> > items = {{1, 10}, {2, 20}, {3, 30}};
         return InventorySystem::maximizeCarryValue(10, items) == 60;
     }());
 
@@ -150,16 +153,16 @@ void test_PartC_Navigator() {
 
     // 1. Safe Passage (Path Exists)
     // PDF Example: 0-1, 1-2. Path 0->2 exists.
-    runner.runTest("PathExists: test_path_exists_no_n=0_stud_20231166", [&]() {
-        vector<vector<int>> edges = {};
-        return !WorldNavigator::pathExists(0, edges, 0, 0);
+    runner.runTest("PathExists: 0->1->2 -> True", [&]() {
+        vector<vector<int> > edges = {{0, 1}, {1, 2}};
+        return WorldNavigator::pathExists(3, edges, 0, 2) == true;
     }());
 
     // 2. The Bribe (MST)
     // PDF Example: 3 Nodes. Roads: {0,1,10}, {1,2,5}, {0,2,20}. Rate=1.
     // MST should pick 10 and 5. Total 15.
     runner.runTest("MinBribeCost: Triangle Graph -> Cost 15", [&]() {
-        vector<vector<int>> roads = {
+        vector<vector<int> > roads = {
             {0, 1, 10, 0},
             {1, 2, 5, 0},
             {0, 2, 20, 0}
@@ -171,7 +174,7 @@ void test_PartC_Navigator() {
     // 3. Teleporter (Binary Sum APSP)
     // PDF Example: 0-1 (1), 1-2 (2). Distances: 1, 2, 3. Sum=6 -> "110"
     runner.runTest("BinarySum: Line Graph -> '110'", [&]() {
-        vector<vector<int>> roads = {
+        vector<vector<int> > roads = {
             {0, 1, 1},
             {1, 2, 2}
         };
@@ -208,3 +211,201 @@ int main() {
 
     return 0;
 }
+
+
+
+//
+// /* Our Testcase */
+//
+// #include <iostream>
+// #include <vector>
+// #include <string>
+// #include <iomanip>
+// #include <algorithm>   // for find
+// #include "ArcadiaEngine.h"
+//
+// using namespace std;
+//
+// // ==========================================
+// // FACTORY FUNCTIONS (LINKING)
+// // ==========================================
+// extern "C" {
+// PlayerTable *createPlayerTable();
+//
+// Leaderboard *createLeaderboard();
+//
+// AuctionTree *createAuctionTree();
+// }
+//
+// // ==========================================
+// // TEST RUNNER
+// // ==========================================
+// class TestRunner {
+//     int total = 0;
+//     int passed = 0;
+//
+// public:
+//     void run(const string &name, bool condition) {
+//         total++;
+//         cout << left << setw(65) << name;
+//         if (condition) {
+//             cout << "[ PASS ]";
+//             passed++;
+//         } else {
+//             cout << "[ FAIL ]";
+//         }
+//         cout << endl;
+//     }
+//
+//     void summary() {
+//         cout << "\n==========================================" << endl;
+//         cout << "PASSED: " << passed << " / " << total << endl;
+//         cout << "==========================================" << endl;
+//         if (passed == total)
+//             cout << "Excellent! All tests passed." << endl;
+//         else
+//             cout << "Some tests failed. Check edge cases." << endl;
+//     }
+// };
+//
+// TestRunner runner;
+//
+// // ==========================================
+// // PART A: DATA STRUCTURES
+// // ==========================================
+// void testPartA() {
+//     cout << "\n--- PART A: DATA STRUCTURES ---" << endl;
+//
+//     // PlayerTable (Double Hashing)
+//     PlayerTable *table = createPlayerTable();
+//
+//     runner.run("PlayerTable: Search Empty Table", table->search(100) == "");
+//
+//     table->insert(1, "Alice");
+//     table->insert(102, "Bob"); // collision with 1
+//     table->insert(203, "Charlie"); // collision with 1 & 102
+//
+//     runner.run("PlayerTable: Collision Alice", table->search(1) == "Alice");
+//     runner.run("PlayerTable: Collision Bob", table->search(102) == "Bob");
+//     runner.run("PlayerTable: Collision Charlie", table->search(203) == "Charlie");
+//     runner.run("PlayerTable: Missing Key", table->search(999) == "");
+//
+//     delete table;
+//
+//     // Leaderboard (Skip List)
+//     Leaderboard *board = createLeaderboard();
+//
+//     runner.run("Leaderboard: Empty TopN", board->getTopN(3).empty());
+//
+//     board->addScore(1, 100);
+//     board->addScore(2, 300);
+//     board->addScore(3, 200);
+//
+//     vector<int> top = board->getTopN(3);
+//     runner.run("Leaderboard: Correct Order",
+//                top.size() >= 3 && top[0] == 2 && top[1] == 3 && top[2] == 1);
+//
+//     board->addScore(10, 500);
+//     board->addScore(5, 500);
+//
+//     vector<int> tie = board->getTopN(2);
+//     runner.run("Leaderboard: Tie-Break by ID", tie[0] == 5 && tie[1] == 10);
+//
+//     board->removePlayer(2);
+//     vector<int> afterRemove = board->getTopN(10);
+//     runner.run("Leaderboard: Remove Player",
+//                find(afterRemove.begin(), afterRemove.end(), 2) == afterRemove.end());
+//
+//     delete board;
+//
+//     // AuctionTree (Red-Black Tree)
+//     AuctionTree *tree = createAuctionTree();
+//
+//     runner.run("AuctionTree: Insert Nodes", [&]() {
+//         tree->insertItem(1, 100);
+//         tree->insertItem(2, 50);
+//         tree->insertItem(3, 150);
+//         return true;
+//     }());
+//
+//     runner.run("AuctionTree: Delete Existing", [&]() {
+//         tree->deleteItem(2);
+//         return true;
+//     }());
+//
+//     runner.run("AuctionTree: Delete Missing", [&]() {
+//         tree->deleteItem(999);
+//         return true;
+//     }());
+//
+//     delete tree;
+// }
+//
+// // ==========================================
+// // PART B: INVENTORY SYSTEM
+// // ==========================================
+// void testPartB() {
+//     cout << "\n--- PART B: INVENTORY SYSTEM ---" << endl;
+//
+//     vector<int> emptyCoins;
+//     runner.run("LootSplit: Empty", InventorySystem::optimizeLootSplit(0, emptyCoins) == 0);
+//
+//     vector<int> coins1 = {10};
+//     runner.run("LootSplit: Single Coin", InventorySystem::optimizeLootSplit(1, coins1) == 10);
+//
+//     vector<int> coins2 = {3, 1, 4, 2, 2};
+//     runner.run("LootSplit: Balanced", InventorySystem::optimizeLootSplit(5, coins2) == 0);
+//
+//     vector<pair<int, int> > items;
+//     runner.run("Knapsack: Empty", InventorySystem::maximizeCarryValue(10, items) == 0);
+//
+//     items = {{5, 10}, {4, 40}, {6, 30}};
+//     runner.run("Knapsack: Normal", InventorySystem::maximizeCarryValue(10, items) == 70);
+//
+//     runner.run("Decoder: Empty String", InventorySystem::countStringPossibilities("") == 1);
+//     runner.run("Decoder: uu", InventorySystem::countStringPossibilities("uu") == 2);
+// }
+//
+// // ==========================================
+// // PART C: WORLD NAVIGATOR
+// // ==========================================
+// void testPartC() {
+//     cout << "\n--- PART C: WORLD NAVIGATOR ---" << endl;
+//
+//     vector<vector<int> > edges;
+//     runner.run("PathExists: No Path",
+//                WorldNavigator::pathExists(3, edges, 0, 2) == false);
+//
+//     vector<vector<int> > roads = {{0, 1, 1}, {1, 2, 2}};
+//     runner.run("BinarySum: Simple",
+//                WorldNavigator::sumMinDistancesBinary(3, roads) == "110");
+// }
+//
+// // ==========================================
+// // PART D: SERVER KERNEL
+// // ==========================================
+// void testPartD() {
+//     cout << "\n--- PART D: SERVER KERNEL ---" << endl;
+//
+//     vector<char> tasks;
+//     runner.run("Scheduler: Empty", ServerKernel::minIntervals(tasks, 2) == 0);
+//
+//     tasks = {'A', 'A', 'A'};
+//     runner.run("Scheduler: Cooldown", ServerKernel::minIntervals(tasks, 2) == 7);
+// }
+//
+// // ==========================================
+// // MAIN
+// // ==========================================
+// int main() {
+//     cout << "Arcadia Engine - Extended Main Test" << endl;
+//     cout << "---------------------------------" << endl;
+//
+//     testPartA();
+//     testPartB();
+//     testPartC();
+//     testPartD();
+//
+//     runner.summary();
+//     return 0;
+// }
