@@ -62,15 +62,22 @@ public:
         while (i < TABLE_SIZE) {
             int j = h(k, i);
 
-            if (!table[j].occupied) {
+            if (table[j].occupied) {
+                // If same ID exists, update it
+                if (table[j].PlayerID == k) {
+                    table[j].name = name;
+                    return j;
+                }
+            } else {
                 table[j].PlayerID = k;
                 table[j].name = name;
                 table[j].occupied = true;
                 return j;
             }
-            i = i + 1;
+            i++;
         }
-        cout << endl << "Table is full";
+        cout << endl << "Table is Full";
+        return -1;
     }
 
     void insert(int playerID, string name) override {
@@ -201,28 +208,27 @@ public:
     }
 
     vector<int> getTopN(int n) override {
-    // 1. Determine the actual size (don't exceed total elements if list is shorter than n)
-    // For now, we initialize to n and resize later if the list ends early.
-    vector<int> topPlayers(n); 
-    
-    SLNode* current = head->forward[0];
-    int count = 0;
+        // 1. Determine the actual size (don't exceed total elements if list is shorter than n)
+        // For now, we initialize to n and resize later if the list ends early.
+        vector<int> topPlayers(n);
 
-    // 2. Fill the vector using index access
-    while (current != nullptr && count < n) {
-        topPlayers[count] = current->playerID;
-        count++;
-        current = current->forward[0];
+        SLNode *current = head->forward[0];
+        int count = 0;
+
+        // 2. Fill the vector using index access
+        while (current != nullptr && count < n) {
+            topPlayers[count] = current->playerID;
+            count++;
+            current = current->forward[0];
+        }
+
+        // 3. If the list had fewer than 'n' elements, shrink the vector to fit
+        if (count < n) {
+            topPlayers.resize(count);
+        }
+
+        return topPlayers;
     }
-
-    // 3. If the list had fewer than 'n' elements, shrink the vector to fit
-    if (count < n) {
-        topPlayers.resize(count);
-    }
-
-    return topPlayers;
-}
-
 };
 
 // --- 3. AuctionTree (Red-Black Tree) ---
@@ -588,11 +594,10 @@ long long InventorySystem::countStringPossibilities(string s) {
 // PART C: WORLD NAVIGATOR (Graphs)
 // =========================================================
 
-bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, int dest) {
-
-    if(n==0){return false;}
-    if(source==dest){return true;}
-    vector<vector<int>> adj(n);
+bool WorldNavigator::pathExists(int n, vector<vector<int> > &edges, int source, int dest) {
+    if (n == 0) { return false; }
+    if (source == dest) { return true; }
+    vector<vector<int> > adj(n);
 
     for (int i = 0; i < edges.size(); i++) {
         int u = edges[i][0];
@@ -628,37 +633,36 @@ bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, i
 }
 
 long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate,
-                                       vector<vector<int>> &roadData) {
-
+                                       vector<vector<int> > &roadData) {
     // 1️⃣ بناء adjacency list مع cost لكل edge
-    vector<vector<pair<int,long long>>> adj(n);
+    vector<vector<pair<int, long long> > > adj(n);
     for (int i = 0; i < m; i++) {
         int u = roadData[i][0];
         int v = roadData[i][1];
-        long long cost = roadData[i][2]*goldRate + roadData[i][3]*silverRate;
-        adj[u].push_back({v,cost});
-        adj[v].push_back({u,cost});
+        long long cost = roadData[i][2] * goldRate + roadData[i][3] * silverRate;
+        adj[u].push_back({v, cost});
+        adj[v].push_back({u, cost});
     }
 
     // 2️⃣ تهيئة visited array
-    vector<bool> visited(n,false);
+    vector<bool> visited(n, false);
 
     // 3️⃣ تهيئة الـ priority queue (min-heap)
-    priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<pair<long long,int>>> pq;
+    priority_queue<pair<long long, int>, vector<pair<long long, int> >, greater<pair<long long, int> > > pq;
 
-    pq.push({0,0}); 
+    pq.push({0, 0});
     long long total = 0;
 
     while (!pq.empty()) {
-        pair<long long,int> top = pq.top();
+        pair<long long, int> top = pq.top();
         pq.pop();
 
         long long cost = top.first;
         int u = top.second;
 
-        if (visited[u]) continue; 
+        if (visited[u]) continue;
         visited[u] = true;
-        total += cost; 
+        total += cost;
         for (int i = 0; i < adj[u].size(); i++) {
             int v = adj[u][i].first;
             long long c = adj[u][i].second;
@@ -764,4 +768,3 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
-
