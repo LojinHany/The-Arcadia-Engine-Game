@@ -126,21 +126,117 @@ private:
 public:
     ConcreteLeaderboard() {
         // TODO: Initialize your skip list
+        currentLevel=1;
+        head = new SLNode(-1,-1, maxNumberOfLevel);
+    }
+
+    int randomLevel() {
+    int lvl = 1;
+    while ((rand() % 2) && lvl < maxNumberOfLevel) {
+        lvl++;
+    }
+    return lvl;
     }
 
     void addScore(int playerID, int score) override {
+        SLNode* update[maxNumberOfLevel];
+        SLNode* current = head;
         // TODO: Implement skip list insertion
         // Remember to maintain descending order by score
+        for (int i = currentLevel - 1; i >= 0; i--) {
+      while (current->forward[i] != nullptr && 
+              (current->forward[i]->score > score || 
+              (current->forward[i]->score == score && current->forward[i]->playerID < playerID))) {
+            current = current->forward[i];
+        }
+        update[i] = current;
+    }
+
+   
+    int newLevel = randomLevel();
+
+    if (newLevel > currentLevel) {
+        for (int i = currentLevel; i < newLevel; i++) {
+            update[i] = head;
+        }
+        currentLevel = newLevel;
+        }
+
+         SLNode* newNode = new SLNode(playerID, score, newLevel);
+
+        // Re-link pointers
+        for (int i = 0; i < newLevel; i++) {
+            newNode->forward[i] = update[i]->forward[i];
+            update[i]->forward[i] = newNode;
+        }
+
+
     }
 
     void removePlayer(int playerID) override {
         // TODO: Implement skip list deletion
+        SLNode* update[maxNumberOfLevel];
+        SLNode* current = head;
+        SLNode* target = nullptr;
+
+        SLNode* temp = head->forward[0];
+        while (temp != nullptr) {
+        if (temp->playerID == playerID) {
+            target = temp;
+            break;
+        }
+        temp = temp->forward[0];
+    }
+
+        if (!target) return;
+
+        int targetScore = target->score;
+        current = head;
+        for (int i = currentLevel - 1; i >= 0; i--) {
+        while (current->forward[i] != nullptr && 
+              (current->forward[i]->score > targetScore || 
+              (current->forward[i]->score == targetScore && current->forward[i]->playerID < playerID))) {
+            current = current->forward[i];
+        }
+        update[i] = current;
+        }
+
+
+        if (current->forward[0] == target) {
+        for (int i = 0; i < currentLevel; i++) {
+            if (update[i]->forward[i] != target) break;
+            update[i]->forward[i] = target->forward[i];
+        }
+        delete target;
+        }
+
+         while (currentLevel > 1 &&
+           head->forward[currentLevel - 1] == nullptr
+                ) {
+                    currentLevel--;
+                }
+
     }
 
     vector<int> getTopN(int n) override {
         // TODO: Return top N player IDs in descending score order
-        return {};
-    }
+        vector<int> topPlayers;
+    
+    
+        SLNode* current = head->forward[0];
+
+    // Traverse the base level (level 0) until we:
+    // 1. Collect 'n' players
+    // 2. Or reach the end of the list (nullptr)
+        while (current != nullptr && (int)topPlayers.size() < n) {
+            topPlayers.push_back(current->playerID);
+            current = current->forward[0];
+        }
+
+        return topPlayers;
+        }
+
+        
 };
 
 // --- 3. AuctionTree (Red-Black Tree) ---
