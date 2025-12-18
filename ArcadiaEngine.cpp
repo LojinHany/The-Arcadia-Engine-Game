@@ -1,5 +1,3 @@
-// ArcadiaEngine.cpp - STUDENT TEMPLATE
-
 #include "ArcadiaEngine.h"
 #include <algorithm>
 #include <queue>
@@ -574,7 +572,7 @@ int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int> > &i
 
 long long InventorySystem::countStringPossibilities(string s) {
     const long long MOD = 1e9 + 7;
-    for (char c : s) {
+    for (char c: s) {
         if (c == 'w' || c == 'm') {
             return 0;
         }
@@ -594,7 +592,6 @@ long long InventorySystem::countStringPossibilities(string s) {
     }
     return dp[n];
 }
-
 
 
 // =========================================================
@@ -641,7 +638,6 @@ bool WorldNavigator::pathExists(int n, vector<vector<int> > &edges, int source, 
 
 long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate,
                                        vector<vector<int> > &roadData) {
-    
     vector<vector<pair<int, long long> > > adj(n);
     for (int i = 0; i < m; i++) {
         int u = roadData[i][0];
@@ -651,7 +647,7 @@ long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long lo
         adj[v].push_back({u, cost});
     }
 
-   
+
     vector<bool> visited(n, false);
 
 
@@ -688,6 +684,7 @@ long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long lo
 }
 
 string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int> > &roads) {
+    if (roads.size() == 0) { return "0"; }
     long long inf = INT_MAX;
     vector<vector<long long> > dist(n, vector<long long>(n));
     for (int i = 0; i < n; i++) {
@@ -775,5 +772,3 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
-
-
