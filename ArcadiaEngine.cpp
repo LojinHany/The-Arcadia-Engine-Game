@@ -641,7 +641,7 @@ bool WorldNavigator::pathExists(int n, vector<vector<int> > &edges, int source, 
 
 long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate,
                                        vector<vector<int> > &roadData) {
-    // 1️⃣ بناء adjacency list مع cost لكل edge
+    
     vector<vector<pair<int, long long> > > adj(n);
     for (int i = 0; i < m; i++) {
         int u = roadData[i][0];
@@ -651,10 +651,10 @@ long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long lo
         adj[v].push_back({u, cost});
     }
 
-    // 2️⃣ تهيئة visited array
+   
     vector<bool> visited(n, false);
 
-    // 3️⃣ تهيئة الـ priority queue (min-heap)
+
     priority_queue<pair<long long, int>, vector<pair<long long, int> >, greater<pair<long long, int> > > pq;
 
     pq.push({0, 0});
@@ -775,4 +775,5 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
+
 
