@@ -1,5 +1,4 @@
 // ArcadiaEngine.cpp - STUDENT TEMPLATE
-// TODO: Implement all the functions below according to the assignment requirements
 
 #include "ArcadiaEngine.h"
 #include <algorithm>
@@ -24,77 +23,68 @@ using namespace std;
 
 class ConcretePlayerTable : public PlayerTable {
 private:
-    // TODO: Define your data structures here
-    static const int TABLE_SIZE = 101;   
-    struct PlayerData
-    {
+    static const int TABLE_SIZE = 101;
+
+    struct PlayerData {
         /* data */
         int PlayerID;
         string name;
         bool occupied;
     };
-    
-    
-    // Hint: You'll need a hash table with double hashing collision resolution
+
     vector<PlayerData> table;
 
 public:
-    ConcretePlayerTable(): table(TABLE_SIZE){
+    ConcretePlayerTable() : table(TABLE_SIZE) {
         // TODO: Initialize your hash table
-        for(int i = 0; i<TABLE_SIZE; i++){
-            table[i].PlayerID=-1;
-            table[i].name="";
-            table[i].occupied= false;
-
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            table[i].PlayerID = -1;
+            table[i].name = "";
+            table[i].occupied = false;
         }
-        
     }
 
     int h1(int k) {
-    return k % TABLE_SIZE;
+        return k % TABLE_SIZE;
     }
 
     int h2(int k) {
-        return 1 + (k % (TABLE_SIZE - 1));   // must be non-zero
+        return 1 + (k % (TABLE_SIZE - 1)); // must be non-zero
     }
 
     int h(int k, int i) {
         return (h1(k) + i * h2(k)) % TABLE_SIZE;
     }
 
-    int hashInsert(int k, string name){
-        int i=0;
+    int hashInsert(int k, string name) {
+        int i = 0;
 
-        while(i<TABLE_SIZE){
-            int j = h(k,i);
-            
-            if(!table[j].occupied){
+        while (i < TABLE_SIZE) {
+            int j = h(k, i);
+
+            if (!table[j].occupied) {
                 table[j].PlayerID = k;
                 table[j].name = name;
-                table[j].occupied=true;
+                table[j].occupied = true;
                 return j;
             }
             i = i + 1;
         }
-        cout<<endl<<"Table is full";
+        cout << endl << "Table is full";
     }
 
     void insert(int playerID, string name) override {
-        // TODO: Implement double hashing insert
         hashInsert(playerID, name);
-
-        // Remember to handle collisions using h1(PlayerID) + i * h2(PlayerID)
     }
 
     string search(int playerID) override {
-        // TODO: Implement double hashing search
         int i = 0;
-        while(i<TABLE_SIZE){
-            int j=h(playerID,i);
-            if(table[j].PlayerID==playerID){
+        while (i < TABLE_SIZE) {
+            int j = h(playerID, i);
+            if (table[j].PlayerID == playerID) {
                 return table[j].name;
             }
-            if(!table[j].occupied){
+            if (!table[j].occupied) {
                 return "";
             }
             i = i + 1;
@@ -108,135 +98,124 @@ public:
 
 class ConcreteLeaderboard : public Leaderboard {
 private:
-    // TODO: Define your skip list node structure and necessary variables
-    // Hint: You'll need nodes with multiple forward pointers
     struct SLNode {
         int playerID;
         int score;
-        vector<SLNode*> forward;
+        vector<SLNode *> forward;
 
         SLNode(int id, int sc, int level)
-            : playerID(id), score(sc), forward(level, nullptr) {}
+            : playerID(id), score(sc), forward(level, nullptr) {
+        }
     };
 
-    static const int maxNumberOfLevel  = 16;
-    SLNode* head;
+    static const int maxNumberOfLevel = 16;
+    SLNode *head;
     int currentLevel;
 
 public:
     ConcreteLeaderboard() {
-        // TODO: Initialize your skip list
-        currentLevel=1;
-        head = new SLNode(-1,-1, maxNumberOfLevel);
+        currentLevel = 1;
+        head = new SLNode(-1, -1, maxNumberOfLevel);
     }
 
     int randomLevel() {
-    int lvl = 1;
-    while ((rand() % 2) && lvl < maxNumberOfLevel) {
-        lvl++;
-    }
-    return lvl;
+        int lvl = 1;
+        while ((rand() % 2) && lvl < maxNumberOfLevel) {
+            lvl++;
+        }
+        return lvl;
     }
 
     void addScore(int playerID, int score) override {
-        SLNode* update[maxNumberOfLevel];
-        SLNode* current = head;
-        // TODO: Implement skip list insertion
-        // Remember to maintain descending order by score
+        SLNode *update[maxNumberOfLevel];
+        SLNode *current = head;
         for (int i = currentLevel - 1; i >= 0; i--) {
-      while (current->forward[i] != nullptr && 
-              (current->forward[i]->score > score || 
-              (current->forward[i]->score == score && current->forward[i]->playerID < playerID))) {
-            current = current->forward[i];
-        }
-        update[i] = current;
-    }
-
-   
-    int newLevel = randomLevel();
-
-    if (newLevel > currentLevel) {
-        for (int i = currentLevel; i < newLevel; i++) {
-            update[i] = head;
-        }
-        currentLevel = newLevel;
+            while (current->forward[i] != nullptr &&
+                   (current->forward[i]->score > score ||
+                    (current->forward[i]->score == score && current->forward[i]->playerID < playerID))) {
+                current = current->forward[i];
+            }
+            update[i] = current;
         }
 
-         SLNode* newNode = new SLNode(playerID, score, newLevel);
+
+        int newLevel = randomLevel();
+
+        if (newLevel > currentLevel) {
+            for (int i = currentLevel; i < newLevel; i++) {
+                update[i] = head;
+            }
+            currentLevel = newLevel;
+        }
+
+        SLNode *newNode = new SLNode(playerID, score, newLevel);
 
         // Re-link pointers
         for (int i = 0; i < newLevel; i++) {
             newNode->forward[i] = update[i]->forward[i];
             update[i]->forward[i] = newNode;
         }
-
-
     }
 
     void removePlayer(int playerID) override {
-        // TODO: Implement skip list deletion
-        SLNode* update[maxNumberOfLevel];
-        SLNode* current = head;
-        SLNode* target = nullptr;
+        SLNode *update[maxNumberOfLevel];
+        SLNode *current = head;
+        SLNode *target = nullptr;
 
-        SLNode* temp = head->forward[0];
+        SLNode *temp = head->forward[0];
         while (temp != nullptr) {
-        if (temp->playerID == playerID) {
-            target = temp;
-            break;
+            if (temp->playerID == playerID) {
+                target = temp;
+                break;
+            }
+            temp = temp->forward[0];
         }
-        temp = temp->forward[0];
-    }
 
         if (!target) return;
 
         int targetScore = target->score;
         current = head;
         for (int i = currentLevel - 1; i >= 0; i--) {
-        while (current->forward[i] != nullptr && 
-              (current->forward[i]->score > targetScore || 
-              (current->forward[i]->score == targetScore && current->forward[i]->playerID < playerID))) {
-            current = current->forward[i];
-        }
-        update[i] = current;
+            while (current->forward[i] != nullptr &&
+                   (current->forward[i]->score > targetScore ||
+                    (current->forward[i]->score == targetScore && current->forward[i]->playerID < playerID))) {
+                current = current->forward[i];
+            }
+            update[i] = current;
         }
 
 
         if (current->forward[0] == target) {
-        for (int i = 0; i < currentLevel; i++) {
-            if (update[i]->forward[i] != target) break;
-            update[i]->forward[i] = target->forward[i];
-        }
-        delete target;
+            for (int i = 0; i < currentLevel; i++) {
+                if (update[i]->forward[i] != target) break;
+                update[i]->forward[i] = target->forward[i];
+            }
+            delete target;
         }
 
-         while (currentLevel > 1 &&
-           head->forward[currentLevel - 1] == nullptr
-                ) {
-                    currentLevel--;
-                }
-
+        while (currentLevel > 1 &&
+               head->forward[currentLevel - 1] == nullptr
+        ) {
+            currentLevel--;
+        }
     }
 
     vector<int> getTopN(int n) override {
-        // TODO: Return top N player IDs in descending score order
         vector<int> topPlayers;
-    
-    
-        SLNode* current = head->forward[0];
 
-    // Traverse the base level (level 0) until we:
-    // 1. Collect 'n' players
-    // 2. Or reach the end of the list (nullptr)
-        while (current != nullptr && (int)topPlayers.size() < n) {
+
+        SLNode *current = head->forward[0];
+
+        // Traverse the base level (level 0) until we:
+        // 1. Collect 'n' players
+        // 2. Or reach the end of the list (nullptr)
+        while (current != nullptr && (int) topPlayers.size() < n) {
             topPlayers.push_back(current->playerID);
             current = current->forward[0];
         }
 
         return topPlayers;
-        }
-
-        
+    }
 };
 
 // --- 3. AuctionTree (Red-Black Tree) ---
@@ -273,6 +252,10 @@ private:
         }
     }
 
+    RBNode *getParent(RBNode *node, RBNode *fallback) {
+        return node ? node->parent : fallback;
+    }
+
     bool lessThan(RBNode *node1, RBNode *node2) {
         if (node1->price != node2->price) {
             return node1->price < node2->price;
@@ -287,7 +270,7 @@ private:
         if (node->id == id) {
             return node;
         }
-        RBNode* left = searchById(node->left, id);
+        RBNode *left = searchById(node->left, id);
         if (left) {
             return left;
         }
@@ -392,61 +375,67 @@ private:
 
     void fixDelete(RBNode *current, RBNode *parent) {
         while (current != root && getColor(current) == Black) {
-            if (!parent) {
-                break;
-            }
+            if (!parent) break;
+
             if (current == parent->left) {
                 RBNode *sibling = parent->right;
+
                 if (getColor(sibling) == Red) {
                     setColor(sibling, Black);
                     setColor(parent, Red);
                     leftRotate(parent);
                     sibling = parent->right;
                 }
-                if (getColor(sibling->left) == Black && getColor(sibling->right) == Black) {
+
+                if (getColor(sibling ? sibling->left : nullptr) == Black &&
+                    getColor(sibling ? sibling->right : nullptr) == Black) {
                     setColor(sibling, Red);
                     current = parent;
                     parent = current->parent;
                 } else {
-                    if (getColor(sibling->right) == Black) {
-                        setColor(sibling->left, Black);
+                    if (getColor(sibling ? sibling->right : nullptr) == Black) {
+                        setColor(sibling ? sibling->left : nullptr, Black);
                         setColor(sibling, Red);
                         rightRotate(sibling);
                         sibling = parent->right;
                     }
                     setColor(sibling, parent->color);
                     setColor(parent, Black);
-                    setColor(sibling->right, Black);
+                    setColor(sibling ? sibling->right : nullptr, Black);
                     leftRotate(parent);
                     current = root;
                 }
             } else {
                 RBNode *sibling = parent->left;
+
                 if (getColor(sibling) == Red) {
                     setColor(sibling, Black);
                     setColor(parent, Red);
                     rightRotate(parent);
                     sibling = parent->left;
                 }
-                if (getColor(sibling->right) == Black && getColor(sibling->left) == Black) {
+
+                if (getColor(sibling ? sibling->right : nullptr) == Black &&
+                    getColor(sibling ? sibling->left : nullptr) == Black) {
                     setColor(sibling, Red);
                     current = parent;
                     parent = current->parent;
                 } else {
-                    if (getColor(sibling->left) == Black) {
-                        setColor(sibling->right, Black);
+                    if (getColor(sibling ? sibling->left : nullptr) == Black) {
+                        setColor(sibling ? sibling->right : nullptr, Black);
                         setColor(sibling, Red);
                         leftRotate(sibling);
-                        current = parent->left;
+                        sibling = parent->left;
                     }
                     setColor(sibling, parent->color);
                     setColor(parent, Black);
-                    setColor(sibling->left, Black);
+                    setColor(sibling ? sibling->left : nullptr, Black);
                     rightRotate(parent);
                     current = root;
                 }
             }
         }
+
         if (current) {
             setColor(current, Black);
         }
@@ -480,7 +469,6 @@ public:
     }
 
     void deleteItem(int itemID) override {
-        cout << "start delete" << endl;
         RBNode *nodeToDelete = searchById(root, itemID);
         if (!nodeToDelete) return;
         RBNode *actuallyDeleted = nodeToDelete;
@@ -499,26 +487,26 @@ public:
             actuallyDeleted = subTreeMin(nodeToDelete->right);
             originalColor = getColor(actuallyDeleted);
             child = actuallyDeleted->right;
-            if (actuallyDeleted->parent == nodeToDelete) {
-                if (child) {
-                    child->parent = actuallyDeleted;
-                } else {
-                    transplant(actuallyDeleted, actuallyDeleted->right);
-                    actuallyDeleted->right = nodeToDelete->right;
-                    actuallyDeleted->right->parent = actuallyDeleted;
-                    childParent = actuallyDeleted->parent;
-                }
-                transplant(nodeToDelete, actuallyDeleted);
-                actuallyDeleted->left = nodeToDelete->left;
-                actuallyDeleted->left->parent = actuallyDeleted;
-                actuallyDeleted->color = nodeToDelete->color;
+
+            childParent = actuallyDeleted->parent;
+
+            if (actuallyDeleted->parent != nodeToDelete) {
+                transplant(actuallyDeleted, child);
+                actuallyDeleted->right = nodeToDelete->right;
+                actuallyDeleted->right->parent = actuallyDeleted;
+            } else {
+                childParent = actuallyDeleted;
             }
-            cout << "beforee" << endl;
-            delete nodeToDelete;
-            if (originalColor == Black) {
-                cout << "fixxx" << endl;
-                fixDelete(child, childParent);
-            }
+
+            transplant(nodeToDelete, actuallyDeleted);
+            actuallyDeleted->left = nodeToDelete->left;
+            actuallyDeleted->left->parent = actuallyDeleted;
+            actuallyDeleted->color = nodeToDelete->color;
+        }
+        delete nodeToDelete;
+
+        if (originalColor == Black) {
+            fixDelete(child, childParent);
         }
     }
 };
@@ -526,17 +514,17 @@ public:
 // =========================================================
 // PART B: INVENTORY SYSTEM (Dynamic Programming)
 // =========================================================
-int InventorySystem::optimizeLootSplit(int n, vector<int>& coins) {
-    int total=0;
-    for (int i=0; i<n; i++){
-        total+=coins[i];
+int InventorySystem::optimizeLootSplit(int n, vector<int> &coins) {
+    int total = 0;
+    for (int i = 0; i < n; i++) {
+        total += coins[i];
     }
-    int goal = total/2;
+    int goal = total / 2;
 
-    vector<bool> dp(goal+1,false);
-    dp[0]=true;
+    vector<bool> dp(goal + 1, false);
+    dp[0] = true;
 
-    for (int i=0; i<n; i++) {
+    for (int i = 0; i < n; i++) {
         int coin = coins[i];
         for (int j = goal; j >= coin; j--) {
             dp[j] = dp[j] || dp[j - coin];
@@ -544,27 +532,27 @@ int InventorySystem::optimizeLootSplit(int n, vector<int>& coins) {
     }
 
     int best = 0;
-    for (int j=goal; j>=0; j--) {
+    for (int j = goal; j >= 0; j--) {
         if (dp[j]) {
-            best=j;
+            best = j;
             break;
         }
     }
-    return (total - best)-best;
+    return (total - best) - best;
 }
 
-int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int>>& items) {
+int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int> > &items) {
     int n = items.size();
-    vector<vector<int>>V(n+1, vector<int>(capacity+1, 0));
+    vector<vector<int> > V(n + 1, vector<int>(capacity + 1, 0));
 
-    for (int i=1; i<=n; ++i) {
-        int w=items[i-1].first;
-        int v=items[i-1].second;
-        for (int j=0; j<=capacity; ++j) {
+    for (int i = 1; i <= n; ++i) {
+        int w = items[i - 1].first;
+        int v = items[i - 1].second;
+        for (int j = 0; j <= capacity; ++j) {
             if (w <= j) {
-                V[i][j] = max(V[i-1][j], v+V[i-1][j-w]);
+                V[i][j] = max(V[i - 1][j], v + V[i - 1][j - w]);
             } else {
-                V[i][j]=V[i-1][j];
+                V[i][j] = V[i - 1][j];
             }
         }
     }
@@ -572,17 +560,17 @@ int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int>>& it
 }
 
 long long InventorySystem::countStringPossibilities(string s) {
-    const long long MOD =1e9+7;
-    int n=s.size();
-    vector<long long> dp(n+1,0);
-    dp[0]=1;
+    const long long MOD = 1e9 + 7;
+    int n = s.size();
+    vector<long long> dp(n + 1, 0);
+    dp[0] = 1;
 
     for (int i = 1; i <= n; i++) {
-        dp[i] = dp[i-1];
-        if (i >1) {
+        dp[i] = dp[i - 1];
+        if (i > 1) {
             string pair = s.substr(i - 2, 2);
-            if (pair =="uu" || pair =="nn") {
-                dp[i]=(dp[i] + dp[i - 2])%MOD;
+            if (pair == "uu" || pair == "nn") {
+                dp[i] = (dp[i] + dp[i - 2]) % MOD;
             }
         }
     }
@@ -593,42 +581,34 @@ long long InventorySystem::countStringPossibilities(string s) {
 // PART C: WORLD NAVIGATOR (Graphs)
 // =========================================================
 
-bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, int dest)
-{
-    // TODO: Implement path existence check using BFS or DFS
+bool WorldNavigator::pathExists(int n, vector<vector<int> > &edges, int source, int dest) {
     // edges are bidirectional
     // BFS
-    if (source == dest)
-    {
+    if (source == dest) {
         return true;
     }
     queue<int> vertex;
     bool visited[n];
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         visited[i] = false;
     }
     vertex.push(source);
     visited[source] = true;
-    while (!vertex.empty())
-    {
+    while (!vertex.empty()) {
         int curr = vertex.front();
         vertex.pop();
-        for (int i = 0; i < edges.size(); i++)
-        {
+        for (int i = 0; i < edges.size(); i++) {
             int u = edges[i][0];
             int v = edges[i][1];
 
-            if (u == curr && !visited[v])
-            {
+            if (u == curr && !visited[v]) {
                 if (v == dest)
                     return true;
                 visited[v] = true;
                 vertex.push(v);
             }
 
-            if (v == curr && !visited[u])
-            {
+            if (v == curr && !visited[u]) {
                 if (u == dest)
                     return true;
                 visited[u] = true;
@@ -639,8 +619,9 @@ bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, i
     return false;
 }
 
-long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate, vector<vector<int>> &roadData)
-{   vector<int> vertex;
+long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate,
+                                       vector<vector<int> > &roadData) {
+    vector<int> vertex;
     bool visited[n];
     long long Total_cost = 0;
 
@@ -650,18 +631,15 @@ long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long lo
     visited[0] = true;
     vertex.push_back(0);
 
-    while (vertex.size() < n)
-    {
+    while (vertex.size() < n) {
         bool found = false;
 
-        for (int i = 0; i < m; i++)
-        {
+        for (int i = 0; i < m; i++) {
             int u = roadData[i][0];
             int v = roadData[i][1];
             long long cost = roadData[i][2] * goldRate + roadData[i][3] * silverRate;
 
-            if (visited[u] && !visited[v])
-            {
+            if (visited[u] && !visited[v]) {
                 visited[v] = true;
                 vertex.push_back(v);
                 Total_cost += cost;
@@ -669,8 +647,7 @@ long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long lo
                 break;
             }
 
-            if (visited[v] && !visited[u])
-            {
+            if (visited[v] && !visited[u]) {
                 visited[u] = true;
                 vertex.push_back(u);
                 Total_cost += cost;
@@ -686,52 +663,36 @@ long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long lo
     return Total_cost;
 }
 
-string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int>> &roads){
-
-    // TODO: Implement All-Pairs Shortest Path (Floyd-Warshall)
-    // Sum all shortest distances between unique pairs (i < j)
-    // Return the sum as a binary string
-    // Hint: Handle large numbers carefully
+string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int> > &roads) {
     long long inf = INT_MAX;
-    vector<vector<long long>> dist(n, vector<long long>(n));
-    for (int i = 0; i < n; i++)
-    {
-
-        for (int j = 0; j < n; j++)
-        {
+    vector<vector<long long> > dist(n, vector<long long>(n));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             dist[i][j] = inf;
-            if (i == j)
-            {
+            if (i == j) {
                 dist[i][j] = 0;
             }
         }
     }
 
-    for (int i = 0; i < roads.size(); i++)
-    {
+    for (int i = 0; i < roads.size(); i++) {
         int u = roads[i][0];
         int v = roads[i][1];
         long long cost = roads[i][2];
         dist[u][v] = cost;
     }
-    for (int k = 0; k < n; k++)
-    {
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j < n; j++)
-            {
-                if (dist[i][k] != inf && dist[k][j] != inf)
-                {
-                    dist[i][j] = min(dist[i][j],dist[i][k] + dist[k][j]);
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dist[i][k] != inf && dist[k][j] != inf) {
+                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
                 }
             }
         }
     }
     long long sum = 0;
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = i + 1; j < n; j++)
-        {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
             sum += dist[i][j];
         }
     }
@@ -739,8 +700,7 @@ string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int>> &roads){
         return "0";
 
     string binary = "";
-    while (sum > 0)
-    {
+    while (sum > 0) {
         binary = char('0' + (sum % 2)) + binary;
         sum /= 2;
     }
@@ -790,5 +750,3 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
-
-
