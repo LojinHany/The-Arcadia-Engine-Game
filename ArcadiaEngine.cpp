@@ -574,6 +574,11 @@ int InventorySystem::maximizeCarryValue(int capacity, vector<pair<int, int> > &i
 
 long long InventorySystem::countStringPossibilities(string s) {
     const long long MOD = 1e9 + 7;
+    for (char c : s) {
+        if (c == 'w' || c == 'm') {
+            return 0;
+        }
+    }
     int n = s.size();
     vector<long long> dp(n + 1, 0);
     dp[0] = 1;
@@ -589,6 +594,8 @@ long long InventorySystem::countStringPossibilities(string s) {
     }
     return dp[n];
 }
+
+
 
 // =========================================================
 // PART C: WORLD NAVIGATOR (Graphs)
@@ -768,3 +775,4 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
+
