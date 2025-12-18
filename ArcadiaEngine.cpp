@@ -581,86 +581,90 @@ long long InventorySystem::countStringPossibilities(string s) {
 // PART C: WORLD NAVIGATOR (Graphs)
 // =========================================================
 
-bool WorldNavigator::pathExists(int n, vector<vector<int> > &edges, int source, int dest) {
-    // edges are bidirectional
-    // BFS
-    if (source == dest) {
-        return true;
+bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, int dest) {
+
+    vector<vector<int>> adj(n);
+
+    for (int i = 0; i < edges.size(); i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        adj[u].push_back(v);
+        adj[v].push_back(u);
     }
-    queue<int> vertex;
-    bool visited[n];
-    for (int i = 0; i < n; i++) {
-        visited[i] = false;
-    }
-    vertex.push(source);
+
+    vector<bool> visited(n, false);
+    queue<int> q;
+
+    q.push(source);
     visited[source] = true;
-    while (!vertex.empty()) {
-        int curr = vertex.front();
-        vertex.pop();
-        for (int i = 0; i < edges.size(); i++) {
-            int u = edges[i][0];
-            int v = edges[i][1];
 
-            if (u == curr && !visited[v]) {
-                if (v == dest)
-                    return true;
-                visited[v] = true;
-                vertex.push(v);
-            }
+    while (!q.empty()) {
+        int curr = q.front();
+        q.pop();
 
-            if (v == curr && !visited[u]) {
-                if (u == dest)
+        for (int i = 0; i < adj[curr].size(); i++) {
+            int next = adj[curr][i];
+
+            if (!visited[next]) {
+                if (next == dest)
                     return true;
-                visited[u] = true;
-                vertex.push(u);
+
+                visited[next] = true;
+                q.push(next);
             }
         }
     }
+
     return false;
 }
 
 long long WorldNavigator::minBribeCost(int n, int m, long long goldRate, long long silverRate,
-                                       vector<vector<int> > &roadData) {
-    vector<int> vertex;
-    bool visited[n];
-    long long Total_cost = 0;
+                                       vector<vector<int>> &roadData) {
 
-    for (int i = 0; i < n; i++)
-        visited[i] = false;
-
-    visited[0] = true;
-    vertex.push_back(0);
-
-    while (vertex.size() < n) {
-        bool found = false;
-
-        for (int i = 0; i < m; i++) {
-            int u = roadData[i][0];
-            int v = roadData[i][1];
-            long long cost = roadData[i][2] * goldRate + roadData[i][3] * silverRate;
-
-            if (visited[u] && !visited[v]) {
-                visited[v] = true;
-                vertex.push_back(v);
-                Total_cost += cost;
-                found = true;
-                break;
-            }
-
-            if (visited[v] && !visited[u]) {
-                visited[u] = true;
-                vertex.push_back(u);
-                Total_cost += cost;
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-            return -1;
+    // 1️⃣ بناء adjacency list مع cost لكل edge
+    vector<vector<pair<int,long long>>> adj(n);
+    for (int i = 0; i < m; i++) {
+        int u = roadData[i][0];
+        int v = roadData[i][1];
+        long long cost = roadData[i][2]*goldRate + roadData[i][3]*silverRate;
+        adj[u].push_back({v,cost});
+        adj[v].push_back({u,cost});
     }
 
-    return Total_cost;
+    // 2️⃣ تهيئة visited array
+    vector<bool> visited(n,false);
+
+    // 3️⃣ تهيئة الـ priority queue (min-heap)
+    priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<pair<long long,int>>> pq;
+
+    pq.push({0,0}); 
+    long long total = 0;
+
+    while (!pq.empty()) {
+        pair<long long,int> top = pq.top();
+        pq.pop();
+
+        long long cost = top.first;
+        int u = top.second;
+
+        if (visited[u]) continue; 
+        visited[u] = true;
+        total += cost; 
+        for (int i = 0; i < adj[u].size(); i++) {
+            int v = adj[u][i].first;
+            long long c = adj[u][i].second;
+
+            if (!visited[v]) {
+                pq.push({c, v});
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) return -1;
+    }
+
+    return total;
 }
 
 string WorldNavigator::sumMinDistancesBinary(int n, vector<vector<int> > &roads) {
