@@ -590,6 +590,8 @@ long long InventorySystem::countStringPossibilities(string s) {
 
 bool WorldNavigator::pathExists(int n, vector<vector<int>> &edges, int source, int dest) {
 
+    if(n==0){return false;}
+    if(source==dest){return true;}
     vector<vector<int>> adj(n);
 
     for (int i = 0; i < edges.size(); i++) {

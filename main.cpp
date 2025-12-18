@@ -150,9 +150,9 @@ void test_PartC_Navigator() {
 
     // 1. Safe Passage (Path Exists)
     // PDF Example: 0-1, 1-2. Path 0->2 exists.
-    runner.runTest("PathExists: 0->1->2 -> True", [&]() {
-        vector<vector<int>> edges = {{0, 1}, {1, 2}};
-        return WorldNavigator::pathExists(3, edges, 0, 2) == true;
+    runner.runTest("PathExists: test_path_exists_no_n=0_stud_20231166", [&]() {
+        vector<vector<int>> edges = {};
+        return !WorldNavigator::pathExists(0, edges, 0, 0);
     }());
 
     // 2. The Bribe (MST)
