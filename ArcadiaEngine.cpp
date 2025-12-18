@@ -201,21 +201,28 @@ public:
     }
 
     vector<int> getTopN(int n) override {
-        vector<int> topPlayers;
+    // 1. Determine the actual size (don't exceed total elements if list is shorter than n)
+    // For now, we initialize to n and resize later if the list ends early.
+    vector<int> topPlayers(n); 
+    
+    SLNode* current = head->forward[0];
+    int count = 0;
 
-
-        SLNode *current = head->forward[0];
-
-        // Traverse the base level (level 0) until we:
-        // 1. Collect 'n' players
-        // 2. Or reach the end of the list (nullptr)
-        while (current != nullptr && (int) topPlayers.size() < n) {
-            topPlayers.push_back(current->playerID);
-            current = current->forward[0];
-        }
-
-        return topPlayers;
+    // 2. Fill the vector using index access
+    while (current != nullptr && count < n) {
+        topPlayers[count] = current->playerID;
+        count++;
+        current = current->forward[0];
     }
+
+    // 3. If the list had fewer than 'n' elements, shrink the vector to fit
+    if (count < n) {
+        topPlayers.resize(count);
+    }
+
+    return topPlayers;
+}
+
 };
 
 // --- 3. AuctionTree (Red-Black Tree) ---
@@ -755,3 +762,4 @@ AuctionTree *createAuctionTree() {
     return new ConcreteAuctionTree();
 }
 }
+
